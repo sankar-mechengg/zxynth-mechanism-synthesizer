@@ -3,8 +3,13 @@ Celery application configuration.
 Uses Redis as both broker and result backend.
 """
 
+import sys
+
 from celery import Celery
 from ..config import settings
+
+# Prefork pool uses Unix multiprocessing; use solo on Windows to avoid PermissionError
+worker_pool = "solo" if sys.platform == "win32" else "prefork"
 
 celery_app = Celery(
     "zxynth",
@@ -24,7 +29,8 @@ celery_app.conf.update(
     result_expires=3600,  # Results expire after 1 hour
 
     # Concurrency
-    worker_concurrency=settings.max_concurrency,
+    worker_pool=worker_pool,
+    worker_concurrency=1 if worker_pool == "solo" else settings.max_concurrency,
     worker_prefetch_multiplier=1,  # One task at a time per worker process
 
     # Task routing

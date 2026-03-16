@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import useAppStore from './stores/useAppStore';
 import Navbar from './components/layout/Navbar';
@@ -12,6 +12,8 @@ import Results from './pages/Results';
 
 export default function App() {
   const { theme, initTheme } = useAppStore();
+  const location = useLocation();
+  const isLanding = location.pathname === '/';
 
   useEffect(() => {
     initTheme();
@@ -39,7 +41,7 @@ export default function App() {
           <Route path="/results" element={<Results />} />
         </Routes>
       </main>
-      <Footer />
+      {isLanding && <Footer />}
       <EducationSidebar />
     </div>
   );

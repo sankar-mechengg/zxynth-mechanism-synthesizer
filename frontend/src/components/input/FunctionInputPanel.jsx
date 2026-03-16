@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Type, FileSpreadsheet, Table2, Plus, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import useFunctionStore from '../../stores/useFunctionStore';
+import useSynthesisStore from '../../stores/useSynthesisStore';
+import useAppStore from '../../stores/useAppStore';
 import useFileUpload from '../../hooks/useFileUpload';
 import { validateExpression, evaluateExpression } from '../../utils/mathParser';
 import FileUploader from '../common/FileUploader';
@@ -218,11 +220,21 @@ export default function FunctionInputPanel({ className = '' }) {
       )}
 
       <div className="divider" />
-      <MechanismTypeSelector value={store.mechanismType} onChange={store.setMechanismType} />
+      <MechanismTypeSelector
+        value={store.mechanismType}
+        onChange={(type) => {
+          store.setMechanismType(type);
+          useSynthesisStore.getState().reset();
+          useAppStore.getState().resetWorkflow();
+        }}
+      />
       <div className="divider" />
       <AlgorithmSelector
         algorithm={store.algorithm}
-        onAlgorithmChange={store.setAlgorithm}
+        onAlgorithmChange={(algo) => {
+          store.setAlgorithm(algo);
+          useSynthesisStore.getState().reset();
+        }}
         hyperparams={store.hyperparams}
         onHyperparamsChange={store.setHyperparams}
       />

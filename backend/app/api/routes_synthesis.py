@@ -38,8 +38,14 @@ async def submit_synthesis(request: SynthesisRequest):
     # Create job in Redis
     job_id = create_job()
 
+    # Build request dict — ensure mechanismType is explicitly included (critical for 6-bar)
+    req_dict = request.model_dump()
+    req_dict["mechanismType"] = getattr(
+        request.mechanismType, "value", str(request.mechanismType)
+    )
+
     # Dispatch to Celery worker
-    run_synthesis.delay(job_id, request.model_dump())
+    run_synthesis.delay(job_id, req_dict)
 
     return JobSubmitResponse(jobId=job_id, status="queued")
 

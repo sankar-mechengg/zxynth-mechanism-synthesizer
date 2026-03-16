@@ -83,25 +83,31 @@ def synthesize_path_3point(
     d_offset = r * 1.5
     pivot_d = midpoint + direction * d_offset
 
-    # Compute rocker length = distance from D to circumcircle of the 3 points
-    # (approximation: use distance from D to midpoint of P1-P3)
-    a4 = np.sqrt((pivot_d[0] - p1[0])**2 + (pivot_d[1] - p1[1])**2)
-
     # Ground length
     a1 = np.sqrt((pivot_d[0] - cx)**2 + (pivot_d[1] - cy)**2)
 
-    # Coupler: for simplified case (coupler point = B), a3 is distance B→C
-    # Compute C position assuming rocker D→C at initial angle
+    # Coupler point B = p1 at first position. Joint C (coupler-rocker) must be distinct from B.
+    # Place C offset from B (p1) perpendicular to crank A→B so a3 > 0.
+    # C = p1 + a3 * perp, where perp is perpendicular to (p1 - A).
     theta2_0 = np.arctan2(p1[1] - cy, p1[0] - cx)
-    theta4_0 = np.arctan2(p1[1] - pivot_d[1], p1[0] - pivot_d[0])
+    crank_vec = np.array([p1[0] - cx, p1[1] - cy])
+    perp = np.array([-crank_vec[1], crank_vec[0]])
+    perp_norm = np.linalg.norm(perp)
+    if perp_norm < 1e-10:
+        return None  # Degenerate
+    perp = perp / perp_norm
 
-    # C is at the end of rocker from D
-    c_x = pivot_d[0] + a4 * np.cos(theta4_0)
-    c_y = pivot_d[1] + a4 * np.sin(theta4_0)
+    # Coupler length: choose similar to crank for well-proportioned mechanism
+    a3 = r * 0.85
+    c_x = p1[0] + a3 * perp[0]
+    c_y = p1[1] + a3 * perp[1]
 
-    a3 = np.sqrt((c_x - p1[0])**2 + (c_y - p1[1])**2)
+    # Rocker length = distance from D to C
+    a4 = np.sqrt((pivot_d[0] - c_x)**2 + (pivot_d[1] - c_y)**2)
 
-    if any(l <= 0 or np.isnan(l) for l in [a1, r, a3, a4]):
+    # Reject degenerate mechanisms (zero/near-zero links or invalid geometry)
+    min_link = r * 0.1
+    if any(l <= min_link or np.isnan(l) for l in [a1, r, a3, a4]):
         return None
 
     mechanism = FourBar(

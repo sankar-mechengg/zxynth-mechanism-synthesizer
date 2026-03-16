@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, BarChart3 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BarChart3, RotateCcw } from 'lucide-react';
 import clsx from 'clsx';
 import useAppStore from '../../stores/useAppStore';
 import useSynthesisStore from '../../stores/useSynthesisStore';
@@ -30,8 +30,8 @@ export default function SynthesisPage({
   inputContent,
   className = '',
 }) {
-  const { currentStep, setCurrentStep } = useAppStore();
-  const { status } = useSynthesisStore();
+  const { currentStep, setCurrentStep, resetWorkflow } = useAppStore();
+  const { status, reset: resetSynthesis } = useSynthesisStore();
   const navigate = useNavigate();
 
   const isComplete = status === 'complete';
@@ -67,6 +67,11 @@ export default function SynthesisPage({
   const startDisabledReason = !hasInput
     ? 'Define input data first (Step 1)'
     : '';
+
+  const handleReset = () => {
+    resetSynthesis();
+    resetWorkflow();
+  };
 
   return (
     <div className={clsx('flex flex-col gap-6', className)}>
@@ -107,6 +112,7 @@ export default function SynthesisPage({
         {currentStep === 3 && (
           <DimensionalSynthesisStep
             buildRequest={buildRequest}
+            mechanismType={mechanismType}
             canStart={hasInput}
             startDisabledReason={startDisabledReason}
           />
@@ -122,17 +128,29 @@ export default function SynthesisPage({
 
       {/* Navigation buttons */}
       <div className="flex items-center justify-between pt-2 border-t border-[var(--color-border-subtle)]">
-        <button
-          onClick={goPrev}
-          disabled={currentStep === 0}
-          className={clsx(
-            'btn-ghost gap-1.5',
-            currentStep === 0 && 'opacity-30 cursor-not-allowed'
+        <div className="flex items-center gap-2">
+          <button
+            onClick={goPrev}
+            disabled={currentStep === 0}
+            className={clsx(
+              'btn-ghost gap-1.5',
+              currentStep === 0 && 'opacity-30 cursor-not-allowed'
+            )}
+          >
+            <ArrowLeft size={14} />
+            Previous
+          </button>
+          {(currentStep >= 3 || isComplete) && (
+            <button
+              onClick={handleReset}
+              className="btn-ghost gap-1.5 text-amber-400 hover:text-amber-300"
+              title="Clear results and start over with new selections"
+            >
+              <RotateCcw size={14} />
+              Reset
+            </button>
           )}
-        >
-          <ArrowLeft size={14} />
-          Previous
-        </button>
+        </div>
 
         <div className="flex items-center gap-2">
           {/* View results button — available once synthesis is complete */}

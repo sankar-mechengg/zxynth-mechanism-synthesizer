@@ -83,6 +83,17 @@ def synthesize_six_bar_stephenson(
     return result
 
 
+def _coerce_float(v, default: float) -> float:
+    """Coerce value to float; None or invalid becomes default."""
+    if v is None:
+        return default
+    try:
+        f = float(v)
+        return f if f > 0 else default
+    except (TypeError, ValueError):
+        return default
+
+
 def _extend_stephenson(
     base_dict: Dict,
     desired_data: np.ndarray,
@@ -93,12 +104,14 @@ def _extend_stephenson(
     In Stephenson-III, the dyad connects the output rocker (link 4)
     to a new ground pivot, creating a second loop.
     """
-    a1 = base_dict.get("a1", 1)
-    a2 = base_dict.get("a2", 1)
-    a3 = base_dict.get("a3", 1)
-    a4 = base_dict.get("a4", 1)
-    pivot_a = tuple(base_dict.get("pivotA", [0, 0]))
-    pivot_d = tuple(base_dict.get("pivotD", [a1, 0]))
+    a1 = _coerce_float(base_dict.get("a1"), 1.0)
+    a2 = _coerce_float(base_dict.get("a2"), 1.0)
+    a3 = _coerce_float(base_dict.get("a3"), 1.0)
+    a4 = _coerce_float(base_dict.get("a4"), 1.0)
+    pivot_a_raw = base_dict.get("pivotA") or [0, 0]
+    pivot_d_raw = base_dict.get("pivotD") or [a1, 0]
+    pivot_a = (float(pivot_a_raw[0]) if len(pivot_a_raw) > 0 else 0, float(pivot_a_raw[1]) if len(pivot_a_raw) > 1 else 0)
+    pivot_d = (float(pivot_d_raw[0]) if len(pivot_d_raw) > 0 else a1, float(pivot_d_raw[1]) if len(pivot_d_raw) > 1 else 0)
 
     avg_link = (a1 + a2 + a3 + a4) / 4
 
@@ -112,11 +125,14 @@ def _extend_stephenson(
         pivot_d[1] - avg_link * 0.5,
     )
 
+    p_val = _coerce_float(base_dict.get("p"), 0.0)
+    alpha_val = _coerce_float(base_dict.get("alpha"), 0.0)
+
     steph = SixBarStephenson(
         a1=a1, a2=a2, a3=a3, a4=a4,
         a5=a5, a6=a6,
-        p=base_dict.get("p", 0),
-        alpha=base_dict.get("alpha", 0),
+        p=p_val,
+        alpha=alpha_val,
         pivot_a=pivot_a,
         pivot_d=pivot_d,
         pivot_e=pivot_e,

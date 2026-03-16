@@ -43,7 +43,7 @@ pip install -r requirements.txt
 # Start Redis (Docker)
 docker run -d -p 6379:6379 redis:7-alpine
 
-# Start Celery worker
+# Start Celery worker (uses solo pool on Windows, prefork on Linux/macOS)
 celery -A app.core.celery_app worker --loglevel=info
 
 # Start FastAPI server

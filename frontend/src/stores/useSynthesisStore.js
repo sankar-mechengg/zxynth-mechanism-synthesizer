@@ -118,6 +118,8 @@ const useSynthesisStore = create((set, get) => ({
   _startPolling: (jobId) => {
     const poll = async () => {
       const s = get();
+      // Abort if we're now polling a different job (user submitted a new one)
+      if (s.jobId !== jobId) return;
       if (s.status === 'complete' || s.status === 'error' || s.status === 'idle') {
         return; // Stop polling
       }
@@ -134,6 +136,7 @@ const useSynthesisStore = create((set, get) => ({
         const elapsed = s._startTime ? (Date.now() - s._startTime) / 1000 : 0;
 
         if (data.status === 'running') {
+          if (get().jobId !== jobId) return;
           set({
             status: 'running',
             generation: data.generation || s.generation,
@@ -144,9 +147,12 @@ const useSynthesisStore = create((set, get) => ({
           // Schedule next poll
           setTimeout(poll, POLLING.interval);
         } else if (data.status === 'complete') {
-          // Fetch full result
+          // Re-check: user may have submitted a new job while we were fetching
+          if (get().jobId !== jobId) return;
+          // Fetch full result (API returns { jobId, result })
           const resultRes = await axios.get(API.jobResult(jobId));
-          const result = resultRes.data;
+          const result = resultRes.data.result || resultRes.data;
+          if (get().jobId !== jobId) return;
 
           set({
             status: 'complete',
@@ -165,6 +171,7 @@ const useSynthesisStore = create((set, get) => ({
             bestFitness: result.optimization?.errorMetrics?.mean ?? s.bestFitness,
           });
         } else if (data.status === 'error' || data.status === 'failed') {
+          if (get().jobId !== jobId) return;
           set({
             status: 'error',
             error: data.error || 'Synthesis failed',
@@ -172,12 +179,14 @@ const useSynthesisStore = create((set, get) => ({
           });
         } else {
           // queued or unknown — keep polling
+          if (get().jobId !== jobId) return;
           set({ status: data.status || 'queued', elapsed, _pollCount: s._pollCount + 1 });
           setTimeout(poll, POLLING.interval);
         }
       } catch (err) {
-        // Network error — retry with backoff
+        // Network error — retry with backoff (only if still polling this job)
         const s = get();
+        if (s.jobId !== jobId) return;
         if (s._pollCount < 3) {
           set({ _pollCount: s._pollCount + 1 });
           setTimeout(poll, POLLING.retryDelay);

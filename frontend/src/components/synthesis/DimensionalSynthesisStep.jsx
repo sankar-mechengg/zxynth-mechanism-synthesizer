@@ -8,12 +8,14 @@ import ProgressPanel from '../common/ProgressPanel';
  *
  * @param {object} props
  * @param {function} props.buildRequest - Function that returns the synthesis request payload
+ * @param {string} props.mechanismType - Current mechanism type (ensures re-run uses correct type)
  * @param {boolean} props.canStart - Whether all prerequisites are met to start
  * @param {string} [props.startDisabledReason] - Reason why start is disabled
  * @param {string} [props.className]
  */
 export default function DimensionalSynthesisStep({
   buildRequest,
+  mechanismType = 'four_bar',
   canStart = false,
   startDisabledReason = '',
   className = '',
@@ -28,6 +30,7 @@ export default function DimensionalSynthesisStep({
     elapsed,
     submitJob,
     cancelJob,
+    reset,
   } = useSynthesisStore();
 
   const isIdle = status === 'idle' || status === 'error';
@@ -36,7 +39,11 @@ export default function DimensionalSynthesisStep({
 
   const handleStart = async () => {
     if (!canStart) return;
+    // Explicitly clear any stale results before submitting (ensures clean re-run)
+    reset();
     const request = buildRequest();
+    // Ensure mechanism type from UI is used (avoids stale results when switching 4-bar ↔ 6-bar)
+    request.mechanismType = mechanismType;
     await submitJob(request);
   };
 
@@ -54,6 +61,11 @@ export default function DimensionalSynthesisStep({
           <h3 className="text-base font-semibold">Dimensional Synthesis</h3>
           <p className="text-xs text-[var(--color-text-muted)]">
             Computing optimal link lengths and pivot locations
+            {mechanismType && mechanismType !== 'four_bar' && (
+              <span className="ml-1 text-amber-400">
+                ({mechanismType.replace(/_/g, ' ')})
+              </span>
+            )}
           </p>
         </div>
       </div>

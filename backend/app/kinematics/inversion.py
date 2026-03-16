@@ -21,6 +21,17 @@ from .coupler_curve import generate_coupler_curve
 from ..models.mechanism import FourBar
 
 
+def _coerce_link(v) -> float:
+    """Coerce link value to float; None or invalid becomes 0."""
+    if v is None:
+        return 0.0
+    try:
+        f = float(v)
+        return f if f > 0 else 0.0
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def compute_inversion(
     mechanism_dict: Dict,
     fixed_link_index: int,
@@ -35,10 +46,17 @@ def compute_inversion(
     Returns:
         dict with inverted mechanism params, Grashof check, transmission angle
     """
-    a1 = mechanism_dict.get("a1", 0)
-    a2 = mechanism_dict.get("a2", 0)
-    a3 = mechanism_dict.get("a3", 0)
-    a4 = mechanism_dict.get("a4", 0)
+    a1 = _coerce_link(mechanism_dict.get("a1"))
+    a2 = _coerce_link(mechanism_dict.get("a2"))
+    a3 = _coerce_link(mechanism_dict.get("a3"))
+    a4 = _coerce_link(mechanism_dict.get("a4"))
+
+    if a1 <= 0 or a2 <= 0 or a3 <= 0 or a4 <= 0:
+        raise ValueError(
+            "Inversion requires a 4-bar mechanism with valid link lengths (a1, a2, a3, a4 > 0). "
+            f"Got a1={a1}, a2={a2}, a3={a3}, a4={a4}. "
+            "Slider-crank and 6-bar mechanisms are not supported for inversion."
+        )
 
     links = [a1, a2, a3, a4]
 
@@ -77,10 +95,15 @@ def compute_inversion(
     trans = compute_transmission_angle_range(inv_ground, inv_crank, inv_coupler, inv_rocker)
 
     # Create inverted mechanism for coupler curve generation
+    p_val = mechanism_dict.get("p")
+    alpha_val = mechanism_dict.get("alpha")
+    p_val = 0.0 if p_val is None else float(p_val)
+    alpha_val = 0.0 if alpha_val is None else float(alpha_val)
+
     inv_mech = FourBar(
         a1=inv_ground, a2=inv_crank, a3=inv_coupler, a4=inv_rocker,
-        p=mechanism_dict.get("p", 0),
-        alpha=mechanism_dict.get("alpha", 0),
+        p=p_val,
+        alpha=alpha_val,
         pivot_a=(0, 0),
         pivot_d=(inv_ground, 0),
     )

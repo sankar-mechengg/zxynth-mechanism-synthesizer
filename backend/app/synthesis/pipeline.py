@@ -35,7 +35,14 @@ def run_synthesis_pipeline(
     """
     # ── Parse Request ────────────────────────────────────────
     problem_type = request.get("problemType", "path")
-    mechanism_type = request.get("mechanismType", "four_bar")
+    # mechanismType is critical for 6-bar dispatch; support both camelCase and snake_case
+    mechanism_type = (
+        request.get("mechanismType")
+        or request.get("mechanism_type")
+        or "four_bar"
+    )
+    if hasattr(mechanism_type, "value"):
+        mechanism_type = mechanism_type.value
     algorithm = request.get("algorithm", "de")
     hyperparams = request.get("hyperparams", {})
     constraints = request.get("constraints", {})

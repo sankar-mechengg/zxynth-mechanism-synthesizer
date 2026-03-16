@@ -1,11 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BarChart3 } from 'lucide-react';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
 import useAppStore from '../stores/useAppStore';
 import useSynthesisStore from '../stores/useSynthesisStore';
+import usePathStore from '../stores/usePathStore';
+import useMotionStore from '../stores/useMotionStore';
 import PageContainer from '../components/layout/PageContainer';
 import ResultsPage from '../components/results/ResultsPage';
-import SynthesisComparison from '../components/synthesis/SynthesisComparison';
+import MechanismViewer from '../components/visualization/MechanismViewer';
 import ExportMenu from '../components/common/ExportMenu';
 import { handleExport } from '../utils/exportUtils';
 
@@ -21,7 +23,20 @@ export default function Results() {
   const synthesis = useSynthesisStore();
   const navigate = useNavigate();
 
+  const pathStore = usePathStore();
+  const motionStore = useMotionStore();
   const hasResults = synthesis.status === 'complete';
+
+  // Desired path for visualization (path = points, motion = pose centers, function = empty)
+  const desiredPath = useMemo(() => {
+    if (activeProblemType === 'path') {
+      return pathStore.points.map((p) => ({ x: p.x, y: p.y }));
+    }
+    if (activeProblemType === 'motion') {
+      return motionStore.poses.map((p) => ({ x: p.x, y: p.y }));
+    }
+    return [];
+  }, [activeProblemType, pathStore.points, motionStore.poses]);
 
   // Redirect if no results
   useEffect(() => {
@@ -55,21 +70,38 @@ export default function Results() {
 
   const backRoute = activeProblemType ? `/${activeProblemType}` : '/';
 
+  const handleReset = () => {
+    useSynthesisStore.getState().reset();
+    useAppStore.getState().resetWorkflow();
+    navigate(backRoute);
+  };
+
   return (
     <PageContainer fullWidth noPadding grid={false}>
       <div className="flex h-[calc(100vh-3.5rem-5rem)]">
-        {/* Left: Mechanism Viewer (placeholder until Batch 11) */}
+        {/* Left: Mechanism Viewer */}
         <div className="flex-1 min-w-0 p-3 border-r border-[var(--color-border-subtle)]">
           <div className="h-full flex flex-col">
             {/* Header with back button and export */}
             <div className="flex items-center justify-between mb-2 px-1">
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => navigate(backRoute)}
+                  onClick={() => {
+                    useAppStore.getState().resetWorkflow();
+                    navigate(backRoute);
+                  }}
                   className="btn-ghost gap-1 text-xs"
                 >
                   <ArrowLeft size={14} />
                   Back to Synthesis
+                </button>
+                <button
+                  onClick={handleReset}
+                  className="btn-ghost gap-1 text-xs text-amber-400 hover:text-amber-300"
+                  title="Clear results and start over with new selections"
+                >
+                  <RotateCcw size={14} />
+                  Reset
                 </button>
               </div>
               <ExportMenu
@@ -79,39 +111,25 @@ export default function Results() {
             </div>
 
             {/* Mechanism Viewer area */}
-            <div className="flex-1 min-h-0 bg-blueprint rounded-lg border border-[var(--color-border-subtle)] flex items-center justify-center">
+            <div className="flex-1 min-h-0 bg-blueprint rounded-lg border border-[var(--color-border-subtle)] overflow-hidden">
               {hasResults && synthesis.mechanism ? (
-                <div className="text-center">
-                  <BarChart3 size={40} className="text-blueprint-400 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm text-[var(--color-text-secondary)] mb-1">
-                    Mechanism Viewer
-                  </p>
-                  <p className="text-2xs text-[var(--color-text-muted)]">
-                    Interactive visualization will render here (Batch 11)
-                  </p>
-                  {synthesis.mechanism.a1 != null && (
-                    <div className="mt-3 inline-flex gap-3 text-2xs mono text-[var(--color-text-muted)]">
-                      <span>a₁={synthesis.mechanism.a1?.toFixed(1)}</span>
-                      <span>a₂={synthesis.mechanism.a2?.toFixed(1)}</span>
-                      <span>a₃={synthesis.mechanism.a3?.toFixed(1)}</span>
-                      <span>a₄={synthesis.mechanism.a4?.toFixed(1)}</span>
-                    </div>
-                  )}
-                </div>
+                <MechanismViewer desiredPath={desiredPath} className="h-full" />
               ) : (
-                <div className="text-center">
-                  <p className="text-[var(--color-text-muted)] text-sm mb-1">
-                    No results available
-                  </p>
-                  <p className="text-2xs text-[var(--color-text-muted)]">
-                    Run a synthesis first
-                  </p>
-                  <button
-                    onClick={() => navigate(backRoute)}
-                    className="btn-primary mt-3 text-xs py-1.5 px-4"
-                  >
-                    Go to Synthesis
-                  </button>
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-[var(--color-text-muted)] text-sm mb-1">
+                      No results available
+                    </p>
+                    <p className="text-2xs text-[var(--color-text-muted)]">
+                      Run a synthesis first
+                    </p>
+                    <button
+                      onClick={() => navigate(backRoute)}
+                      className="btn-primary mt-3 text-xs py-1.5 px-4"
+                    >
+                      Go to Synthesis
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

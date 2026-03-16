@@ -11,7 +11,8 @@ The bounds are automatically scaled based on the desired path extent.
 import numpy as np
 from typing import Tuple, List
 
-from ...utils.curve_utils import curve_extent, bounding_box
+from ...utils.curve_utils import curve_extent
+from ...utils.geometry import bounding_box
 
 
 def get_bounds_four_bar(

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Table2, MousePointer2, Plus, Trash2, GripVertical } from 'lucide-react';
 import clsx from 'clsx';
 import useMotionStore from '../../stores/useMotionStore';
+import useSynthesisStore from '../../stores/useSynthesisStore';
+import useAppStore from '../../stores/useAppStore';
 import ParameterInput from '../common/ParameterInput';
 import MechanismTypeSelector from './MechanismTypeSelector';
 import AlgorithmSelector from './AlgorithmSelector';
@@ -183,11 +185,21 @@ export default function MotionInputPanel({ className = '' }) {
       )}
 
       <div className="divider" />
-      <MechanismTypeSelector value={store.mechanismType} onChange={store.setMechanismType} />
+      <MechanismTypeSelector
+        value={store.mechanismType}
+        onChange={(type) => {
+          store.setMechanismType(type);
+          useSynthesisStore.getState().reset();
+          useAppStore.getState().resetWorkflow();
+        }}
+      />
       <div className="divider" />
       <AlgorithmSelector
         algorithm={store.algorithm}
-        onAlgorithmChange={store.setAlgorithm}
+        onAlgorithmChange={(algo) => {
+          store.setAlgorithm(algo);
+          useSynthesisStore.getState().reset();
+        }}
         hyperparams={store.hyperparams}
         onHyperparamsChange={store.setHyperparams}
       />

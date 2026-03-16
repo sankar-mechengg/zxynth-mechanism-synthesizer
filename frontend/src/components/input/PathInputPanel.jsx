@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Upload, PenTool } from 'lucide-react';
 import clsx from 'clsx';
 import usePathStore from '../../stores/usePathStore';
+import useSynthesisStore from '../../stores/useSynthesisStore';
+import useAppStore from '../../stores/useAppStore';
 import useFileUpload from '../../hooks/useFileUpload';
 import FileUploader from '../common/FileUploader';
 import MechanismTypeSelector from './MechanismTypeSelector';
@@ -133,7 +135,11 @@ export default function PathInputPanel({ className = '' }) {
       {/* Mechanism type */}
       <MechanismTypeSelector
         value={store.mechanismType}
-        onChange={store.setMechanismType}
+        onChange={(type) => {
+          store.setMechanismType(type);
+          useSynthesisStore.getState().reset();
+          useAppStore.getState().resetWorkflow();
+        }}
       />
 
       <div className="divider" />
@@ -141,7 +147,10 @@ export default function PathInputPanel({ className = '' }) {
       {/* Algorithm */}
       <AlgorithmSelector
         algorithm={store.algorithm}
-        onAlgorithmChange={store.setAlgorithm}
+        onAlgorithmChange={(algo) => {
+          store.setAlgorithm(algo);
+          useSynthesisStore.getState().reset();
+        }}
         hyperparams={store.hyperparams}
         onHyperparamsChange={store.setHyperparams}
       />
