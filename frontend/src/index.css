@@ -1,0 +1,257 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   CSS CUSTOM PROPERTIES — Dark / Light theme variables
+   ============================================================ */
+:root {
+  /* Light mode defaults */
+  --color-bg-primary: #f8fafc;
+  --color-bg-secondary: #f1f5f9;
+  --color-bg-elevated: #ffffff;
+  --color-bg-input: #e2e8f0;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+  --color-border: #cbd5e1;
+  --color-border-subtle: #e2e8f0;
+
+  /* Blueprint grid */
+  --grid-minor: rgba(30, 77, 168, 0.05);
+  --grid-major: rgba(30, 77, 168, 0.12);
+
+  /* Accent */
+  --color-accent: #3170e3;
+  --color-accent-hover: #2a60c8;
+  --color-accent-glow: rgba(49, 112, 227, 0.2);
+}
+
+.dark {
+  --color-bg-primary: #0a0e1a;
+  --color-bg-secondary: #0f1525;
+  --color-bg-elevated: #151d33;
+  --color-bg-input: #1c2640;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-border: #243050;
+  --color-border-subtle: #1c2640;
+
+  /* Blueprint grid — brighter on dark */
+  --grid-minor: rgba(49, 112, 227, 0.06);
+  --grid-major: rgba(49, 112, 227, 0.15);
+
+  --color-accent: #3170e3;
+  --color-accent-hover: #5287e8;
+  --color-accent-glow: rgba(49, 112, 227, 0.3);
+}
+
+/* ============================================================
+   BASE LAYER — Global resets & defaults
+   ============================================================ */
+@layer base {
+  * {
+    @apply border-[var(--color-border)];
+  }
+
+  body {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Selection color */
+  ::selection {
+    background-color: rgba(49, 112, 227, 0.3);
+    color: var(--color-text-primary);
+  }
+
+  /* Focus rings */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-blueprint-500;
+  }
+}
+
+/* ============================================================
+   COMPONENT LAYER — Reusable utility classes
+   ============================================================ */
+@layer components {
+  /* Blueprint grid background */
+  .bg-blueprint {
+    background-color: var(--color-bg-primary);
+    background-image:
+      linear-gradient(var(--grid-minor) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px),
+      linear-gradient(var(--grid-major) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-major) 1px, transparent 1px);
+    background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+  }
+
+  /* Card surface */
+  .card {
+    background-color: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
+    @apply rounded-lg;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-200;
+  }
+  .card-hover:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 20px var(--color-accent-glow);
+  }
+
+  /* Input fields */
+  .input-field {
+    background-color: var(--color-bg-input);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    @apply rounded-md px-3 py-2 text-sm transition-colors duration-150;
+  }
+  .input-field:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-accent-glow);
+    @apply outline-none;
+  }
+  .input-field::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-150;
+    background-color: var(--color-accent);
+    color: #ffffff;
+  }
+  .btn-primary:hover {
+    background-color: var(--color-accent-hover);
+    box-shadow: 0 0 20px var(--color-accent-glow);
+  }
+  .btn-primary:active {
+    transform: scale(0.98);
+  }
+  .btn-primary:disabled {
+    @apply opacity-50 cursor-not-allowed;
+    box-shadow: none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-150;
+    background-color: var(--color-bg-input);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+  }
+  .btn-secondary:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150;
+    color: var(--color-text-secondary);
+  }
+  .btn-ghost:hover {
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-input);
+  }
+
+  /* Label */
+  .label {
+    @apply text-xs font-medium uppercase tracking-wider;
+    color: var(--color-text-muted);
+  }
+
+  /* Monospace code */
+  .mono {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  /* Section heading */
+  .section-heading {
+    @apply text-lg font-semibold tracking-tight;
+    color: var(--color-text-primary);
+  }
+
+  /* Divider with blueprint feel */
+  .divider {
+    @apply w-full h-px;
+    background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+  }
+
+  /* Glowing border effect for active/selected items */
+  .glow-border {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 12px var(--color-accent-glow);
+  }
+}
+
+/* ============================================================
+   SCROLLBAR STYLING
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full;
+  background-color: var(--color-border);
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-muted);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+/* ============================================================
+   TRANSITIONS — Smooth theme switching
+   ============================================================ */
+body,
+.card,
+.card-hover,
+.input-field,
+.btn-primary,
+.btn-secondary,
+.btn-ghost {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* ============================================================
+   ANIMATION UTILITIES
+   ============================================================ */
+.animate-in {
+  animation: fadeSlideIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered children animation */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeSlideIn 0.4s ease-out forwards;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.10s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.20s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.30s; }

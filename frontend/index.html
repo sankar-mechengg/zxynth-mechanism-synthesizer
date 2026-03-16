@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Zxynth — Planar Mechanism Synthesis, Analysis & Visualization. Design 4-bar, 6-bar, and slider-crank mechanisms with path, function, and motion generation." />
+    <meta name="author" content="Sankar Balasubramanian" />
+    <meta property="og:title" content="Zxynth — Mechanism Synthesis" />
+    <meta property="og:description" content="Design and synthesize planar mechanisms with interactive visualization." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://zxynth.xyz" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <title>Zxynth — Planar Mechanism Synthesis</title>
+    <script>
+      /* Prevent flash of wrong theme */
+      (function() {
+        const theme = localStorage.getItem('zxynth-theme');
+        if (theme === 'light') {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="bg-surface-900 text-gray-100 dark:bg-surface-900 dark:text-gray-100 antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
